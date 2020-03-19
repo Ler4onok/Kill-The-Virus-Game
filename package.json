@@ -1,0 +1,13 @@
+{
+  "name": "Coronavirus",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Ler4onok",
+  "license": "MIT",
+  "scripts": {
+    "dev": "parcel ./src/index.html -p 3000"
+  },
+  "dependencies": {
+    "parcel-bundler": "^1.12.4"
+  }
+}
