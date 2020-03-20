@@ -8,7 +8,7 @@ body{
     
 }
 
-#app{
+#root{
     width: 100%;
     height: 100%;
     display: flex;
@@ -23,8 +23,9 @@ body{
 }
 
 #mapWrapper{ 
+    text-align: center;
     position: relative;
-    cursor: url(/aim.84ac894f.cur),auto;
+    cursor: url(/aim.84ac894f.cur),auto;        
 }
 
 #virus{
@@ -56,5 +57,44 @@ body{
     font-size: 21px;
     font-family: monospace;
 }
+
+.result{
+    width: 30%;
+    height: 100px;
+    position: absolute;
+   
+    align-items: center;
+    justify-content: center;
+    font-size: 43px;
+    font-family: monospace;
+    
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: none;
+}
+
+#gameOver{
+    background: #ff000073;
+    border-color: #ff000073;
+    color: #4a0b0b;
+    z-index: 2;
+}
+
+#youWonMessage{
+    background: #10b710a8;
+    color: #126215;
+    z-index: 2;
+}
+
+#redZone{
+    position: absolute;
+    height: 100%;
+    background: #ff000073;
+    top: 0;
+    left: 0;
+}
+
+
 
 /*# sourceMappingURL=/src.e31bb0bc.css.map */

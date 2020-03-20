@@ -198,9 +198,30 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.getRandomNumber = getRandomNumber;
+exports.createDomElement = createDomElement;
 
 function getRandomNumber(min, max) {
   return Math.floor(Math.random() * (max - min)) + min;
+}
+
+function createDomElement(tag, attrs) {
+  var element = document.createElement(tag);
+
+  for (var attr in attrs) {
+    element[attr] = attrs[attr];
+  }
+
+  for (var _len = arguments.length, children = new Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+    children[_key - 2] = arguments[_key];
+  }
+
+  if (children.length !== 0) {
+    children.forEach(function (child) {
+      element.appendChild(child);
+    });
+  }
+
+  return element;
 }
 },{}],"constants.js":[function(require,module,exports) {
 "use strict";
@@ -208,11 +229,13 @@ function getRandomNumber(min, max) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.MAP_WIDTH = exports.MAP_HEIGHT = void 0;
+exports.RED_ZONE_WIDTH_INTERVAL = exports.MAP_WIDTH = exports.MAP_HEIGHT = void 0;
 var MAP_HEIGHT = 600;
 exports.MAP_HEIGHT = MAP_HEIGHT;
 var MAP_WIDTH = 1000;
 exports.MAP_WIDTH = MAP_WIDTH;
+var RED_ZONE_WIDTH_INTERVAL = 100;
+exports.RED_ZONE_WIDTH_INTERVAL = RED_ZONE_WIDTH_INTERVAL;
 },{}],"index.js":[function(require,module,exports) {
 "use strict";
 
@@ -233,34 +256,70 @@ function initialize() {
   render();
 }
 
-var virusClickHandler = function virusClickHandler(virussesEliminated, score) {
-  console.log(score);
-  VIRUSES_ELIMINATED += 1;
-  virussesEliminated.textContent = "Virusses Eliminated: " + VIRUSES_ELIMINATED;
-  score.textContent = "Score: " + (VIRUSES_ELIMINATED - VIRUSES_MISSED);
-
-  if (VIRUSES_ELIMINATED === 5) {
-    alert('Congratilations! The virus was fully eliminated!');
-    document.location.reload();
-  }
-};
-
-var mapClickHandler = function mapClickHandler(virussesMissed) {
-  VIRUSES_MISSED += 1;
-  console.log(VIRUSES_MISSED); //??? on web 4
-
-  virussesMissed.textContent = "Virusses Missed: " + VIRUSES_MISSED;
-  score.textContent = "Score: " + (VIRUSES_ELIMINATED - VIRUSES_MISSED);
-
-  if (VIRUSES_MISSED === 5) {
-    alert('Game Over');
-    document.location.reload();
-  }
-};
+function render() {
+  var mapImage = (0, _utils.createDomElement)('img', {
+    id: 'mapImage',
+    src: _map.default
+  });
+  var virus = (0, _utils.createDomElement)('div', {
+    id: 'virus'
+  });
+  var redZone = (0, _utils.createDomElement)('div', {
+    id: 'redZone'
+  });
+  var score = (0, _utils.createDomElement)('div', {
+    id: 'score',
+    className: 'scoreElement',
+    textContent: "Score: ".concat(VIRUSES_ELIMINATED - VIRUSES_MISSED)
+  });
+  var virussesEliminated = (0, _utils.createDomElement)('div', {
+    id: 'virussesEliminated',
+    className: 'scoreElement',
+    textContent: "Virusses Eliminated: ".concat(VIRUSES_ELIMINATED)
+  });
+  var virussesMissed = (0, _utils.createDomElement)('div', {
+    id: 'virussesMissed',
+    className: 'scoreElement',
+    textContent: "Viruses Missed: ".concat(VIRUSES_MISSED)
+  });
+  var gameOver = (0, _utils.createDomElement)('div', {
+    id: 'gameOver',
+    className: 'result',
+    textContent: 'GAME OVER'
+  });
+  var youWonMessage = (0, _utils.createDomElement)('div', {
+    id: 'youWonMessage',
+    className: 'result',
+    textContent: 'VIRUS DESTROYED!'
+  });
+  var scoreWrapper = (0, _utils.createDomElement)('div', {
+    id: 'scoreWrapper'
+  }, score, virussesEliminated, virussesMissed);
+  var mapWrapper = (0, _utils.createDomElement)('div', {
+    id: 'mapWrapper',
+    style: {
+      width: '1000px'
+    }
+  }, mapImage, gameOver, youWonMessage, redZone, virus);
+  var root = (0, _utils.createDomElement)('div', {
+    id: 'root'
+  }, mapWrapper, scoreWrapper);
+  document.body.appendChild(root);
+  redZone.style.width = '0px';
+  mapWrapper.style.width = "".concat(_constants.MAP_WIDTH, "px");
+  mapWrapper.style.height = "".concat(_constants.MAP_HEIGHT, "px");
+  var interval = displayVirus(virus);
+  virus.addEventListener("click", function (e) {
+    return virusClickHandler(e, virussesEliminated, score, youWonMessage, interval);
+  });
+  mapWrapper.addEventListener("click", function () {
+    return mapClickHandler(virussesMissed, gameOver, interval, redZone, mapWrapper);
+  });
+}
 
 function displayVirus(virus) {
-  setInterval(function () {
-    var isShown = virus.style.display === "block";
+  var gameInterval = setInterval(function () {
+    var isShown = getComputedStyle(virus).getPropertyValue('display') === "block";
 
     if (isShown) {
       virus.style.display = "none";
@@ -272,45 +331,40 @@ function displayVirus(virus) {
       virus.style.top = "".concat(virusPosY, "px");
     }
   }, 1000);
+  return gameInterval;
 }
 
-function render() {
-  var mapWrapper = createAppElement('div', 'mapWrapper', 'mapWrapper');
-  var mapImage = createAppElement('img', 'mapImage', 'mapImage');
-  var virus = createAppElement('div', 'virus', 'virus');
-  var scoreWrapper = createAppElement('div', 'scoreWrapper', 'scoreWrapper');
-  var score = createAppElement('div', 'score', 'scoreElement');
-  var virussesEliminated = createAppElement('div', 'virussesEliminated', 'scoreElement');
-  var virussesMissed = createAppElement('div', 'virussesMissed', 'scoreElement'); // const gameOver = createAppElement('div', 'gameOver', 'gameOver')
+var virusClickHandler = function virusClickHandler(e, virussesEliminated, score, youWonMessage, interval) {
+  e.stopPropagation();
+  VIRUSES_ELIMINATED += 1;
+  virussesEliminated.textContent = "Virusses Eliminated: ".concat(VIRUSES_ELIMINATED);
+  score.textContent = "Score: ".concat(VIRUSES_ELIMINATED - VIRUSES_MISSED);
 
-  mapWrapper.style.width = "".concat(_constants.MAP_WIDTH, "px");
-  mapWrapper.style.height = "".concat(_constants.MAP_HEIGHT, "px");
-  mapImage.src = _map.default;
-  mapWrapper.appendChild(mapImage);
-  mapWrapper.appendChild(virus);
-  scoreWrapper.appendChild(score);
-  scoreWrapper.appendChild(virussesEliminated);
-  scoreWrapper.appendChild(virussesMissed);
-  virussesEliminated.textContent = "Virusses Eliminated: " + VIRUSES_ELIMINATED;
-  virussesMissed.textContent = "Viruses Missed: " + VIRUSES_MISSED;
-  score.textContent = "Score: " + (VIRUSES_ELIMINATED - VIRUSES_MISSED);
-  virus.addEventListener("click", function () {
-    return virusClickHandler(virussesEliminated, score);
-  });
-  mapImage.addEventListener("click", function () {
-    return mapClickHandler(virussesMissed);
-  });
-  var app = document.getElementById("app");
-  app.appendChild(mapWrapper);
-  app.appendChild(scoreWrapper);
-  displayVirus(virus);
-}
+  if (VIRUSES_ELIMINATED === 10) {
+    youWonMessage.style.display = 'flex';
+    clearInterval(interval);
+    setTimeout(function () {
+      document.location.reload();
+    }, 3000);
+  }
+};
 
-var createAppElement = function createAppElement(element, id, className) {
-  var appElement = document.createElement(element);
-  appElement.id = id;
-  appElement.className = className;
-  return appElement;
+var mapClickHandler = function mapClickHandler(virussesMissed, gameOver, interval, redZone, mapWrapper) {
+  console.log(mapWrapper);
+  VIRUSES_MISSED += 1;
+  var redZoneWidth = Number(getComputedStyle(redZone).getPropertyValue('width').replace('px', ''));
+  redZoneWidth += _constants.RED_ZONE_WIDTH_INTERVAL;
+  redZone.style.width = "".concat(redZoneWidth, "px");
+  virussesMissed.textContent = "Virusses Missed: ".concat(VIRUSES_MISSED);
+  score.textContent = "Score: ".concat(VIRUSES_ELIMINATED - VIRUSES_MISSED);
+
+  if (VIRUSES_MISSED === 10) {
+    gameOver.style.display = 'flex';
+    clearInterval(interval);
+    setTimeout(function () {
+      document.location.reload();
+    }, 3000);
+  }
 };
 
 initialize();
@@ -342,7 +396,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "64719" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "58719" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
