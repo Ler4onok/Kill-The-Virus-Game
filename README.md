@@ -1,4 +1,4 @@
-# It's Corona Time!
+# Kill The Virus Game
 
 ## How to run application
 
