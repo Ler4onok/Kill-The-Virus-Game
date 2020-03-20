@@ -1,13 +1,20 @@
 {
-  "name": "Coronavirus",
+  "name": "coronavirus",
   "version": "1.0.0",
   "main": "index.js",
   "author": "Ler4onok",
   "license": "MIT",
+  "homepage": "https://Ler4onok.github.io/Kill-The-Virus-Game",
   "scripts": {
-    "dev": "parcel ./src/index.html -p 3000"
+    "dev": "parcel ./src/index.html -p 3000",
+    "build": "parcel build ./src/index.html",
+    "predeploy": "yarn build",
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "parcel-bundler": "^1.12.4"
+  },
+  "devDependencies": {
+    "gh-pages": "^2.2.0"
   }
 }
